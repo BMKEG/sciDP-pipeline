@@ -16,16 +16,16 @@ This system is specfically designed to prepare data for the 'Science Discourse P
  chmod 755 nxml2txt nxml2txt.sh
  ```
 
-3. Edit `runPipeline.sh` by adding the full path to the assigned part of the script
-
-4. Clone and build this library
+3. Clone and build this library
 
  ```Shell
  git clone https://github.com/BMKEG/sciDP-pipeline
  cd sciDP-pipeline
  mvn -DskipTests clean assembly:assembly
  ```
- 
+
+4. Edit `runPipeline.sh` by adding the full path to the assigned part of the script
+
 5. Run `runPipeline.sh` for folder `/path/to/folder/we/want/nxml` (nxml contains OA files from PMC)
 
  ```Shell
