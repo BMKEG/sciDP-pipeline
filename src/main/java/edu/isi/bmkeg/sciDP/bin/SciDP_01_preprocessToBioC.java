@@ -19,10 +19,10 @@ import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
 import edu.isi.bmkeg.sciDP.uima.ae.MatchReachAndNxmlText;
-import edu.isi.bmkeg.uimaBioC.uima.ae.FixSentencesFromHeadings;
-import edu.isi.bmkeg.uimaBioC.uima.ae.RemoveSentencesFromOtherSections;
-import edu.isi.bmkeg.uimaBioC.uima.ae.SeparateClauses;
-import edu.isi.bmkeg.uimaBioC.uima.ae.StanfordParse;
+import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesFromOtherSections;
+import edu.isi.bmkeg.uimaBioC.rubicon.SeparateClauses;
+import edu.isi.bmkeg.uimaBioC.rubicon.StanfordParse;
+import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
 import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsBioCDocuments;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
@@ -102,7 +102,7 @@ public class SciDP_01_preprocessToBioC {
 		
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(TokenAnnotator.class,
 				TokenAnnotator.PARAM_TOKENIZER_NAME, 
-				"edu.isi.bmkeg.uimaBioC.uima.ae.PennTreebankTokenizer")); // Tokenization
+				"edu.isi.bmkeg.uimaBioC.rubicon.tokenizer.PennTreebankTokenizer")); // Tokenization
 
 		//
 		// Some sentences include headers that don't end in periods
