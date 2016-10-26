@@ -39,19 +39,6 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 	@ConfigurationParameter(mandatory = true, description = "Directory for the SciDP Data.")
 	String inDirPath;
 	File inDir;
-
-	public final static String PARAM_ANNOT_2_EXTRACT = ConfigurationParameterFactory
-			.createConfigurationParameterName(InsertTsvBackIntoBioC.class, "annot2Extract");
-	@ConfigurationParameter(mandatory = false, description = "The section heading *pattern* to extract")
-	String annot2Extract;
-	private Pattern patt;
-
-	public final static String PARAM_KEEP_FLOATING_BOXES = ConfigurationParameterFactory
-			.createConfigurationParameterName(InsertTsvBackIntoBioC.class, "keepFloatsStr");
-	@ConfigurationParameter(mandatory = false, description = "Should we include floating boxes in the output.")
-	String keepFloatsStr;
-	Boolean keepFloats = false;
-	
 	
 	Pattern alignmentPattern = Pattern.compile("^(.{0,3}_+)");
 
@@ -62,13 +49,6 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 		super.initialize(context);
 
 		this.inDir = new File(this.inDirPath);
-
-		if (this.keepFloatsStr.toLowerCase().equals("true")) {
-			keepFloats = true;
-		}
-
-		if (this.annot2Extract != null)
-			this.patt = Pattern.compile(this.annot2Extract);
 		
 	}
 
@@ -85,13 +65,18 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 			logger.info("Loading SciDP Annotations from " + uiD.getId());
 
 			Map<String, String> topInfons = UimaBioCUtils.convertInfons(uiD.getInfons());
-			String pmcDocId = "PMC" + topInfons.get("pmc");
+			String pmcDocId = "PMC";
+			if( topInfons.containsKey("pmc") ) {
+				pmcDocId += topInfons.get("pmc");
+			} else if( topInfons.containsKey("pmcid") ) {
+				pmcDocId = topInfons.get("pmcid");
+			}
 
 			String[] fileTypes = { "tsv" };
 			Collection<File> files = (Collection<File>) FileUtils.listFiles(this.inDir, fileTypes, true);
 			File tsvFile = null;
 			for (File f : files) {
-				if (f.getName().startsWith(uiD.getId() + "_" ) ) {
+				if (f.getName().startsWith(pmcDocId + "." ) ) {
 					tsvFile = f;
 					break;
 				}
@@ -105,57 +90,8 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 			
 			List<UimaBioCAnnotation> outerAnnotations = JCasUtil.selectCovered(UimaBioCAnnotation.class, uiD);
 			
-			if (this.annot2Extract != null) {
+			this.dumpSectionToFile(jCas, table, uiD.getBegin(), uiD.getEnd());
 
-				Set<UimaBioCAnnotation> selectedAnnotations = new HashSet<UimaBioCAnnotation>();
-				for (UimaBioCAnnotation uiA1 : outerAnnotations) {
-
-					Map<String, String> inf = UimaBioCUtils.convertInfons(uiA1.getInfons());
-					if (!inf.containsKey("type"))
-						continue;
-
-					if (!(inf.get("type").equals("formatting") && inf.get("value").equals("sec"))) {
-						continue;
-					}
-
-					if (this.patt != null) {
-						Matcher match = this.patt.matcher(inf.get("sectionHeading"));
-						if (!match.find()) {
-							continue;
-						}
-					}
-
-					selectedAnnotations.add(uiA1);
-
-				}
-
-				int maxL = 0;
-				UimaBioCAnnotation bestA = null;
-				for (UimaBioCAnnotation uiA : selectedAnnotations) {
-					int l = uiA.getEnd() - uiA.getBegin();
-					if (l > maxL) {
-						bestA = uiA;
-						maxL = l;
-					}
-				}
-
-				if (bestA != null) {
-
-					this.dumpSectionToFile(jCas, table, bestA.getBegin(), bestA.getEnd());
-
-				} else {
-
-					logger.error("Couldn't find a section heading corresponding to " + this.annot2Extract + " in "
-							+ uiD.getId());
-
-				}
-
-			} else {
-
-				this.dumpSectionToFile(jCas, table, uiD.getBegin(), uiD.getEnd());
-
-			}
-			
 			logger.info("Loading SciDP Annotations from " + uiD.getId() + " - COMPLETED");
 
 		} catch (Exception e) {
@@ -196,7 +132,8 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 			if (infons.containsKey("position") && infons.get("position").equals("float")) {
 				floats.add(a);
 			} else if (infons.containsKey("value")
-					&& (infons.get("value").equals("p") || infons.get("value").equals("title"))) {
+					&& (infons.get("value").equals("p") 
+							|| infons.get("value").equals("title"))) {
 				parags.add(a);
 			}
 
@@ -220,11 +157,10 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 		String oldPCode = "";
 		SENTENCE_LOOP: for (Sentence s : sentences) {
 
-			if (!this.keepFloats) {
-				for (UimaBioCAnnotation f : floats) {
-					if (s.getBegin() >= f.getBegin() && s.getEnd() <= f.getEnd()) {
-						continue SENTENCE_LOOP;
-					}
+			// Put the floats at the end.
+			for (UimaBioCAnnotation f : floats) {
+				if (s.getBegin() >= f.getBegin() && s.getEnd() <= f.getEnd()) {
+					continue SENTENCE_LOOP;
 				}
 			}
 
@@ -268,6 +204,10 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 			for (UimaBioCAnnotation clause : clauseList) {
 				
 				String text = table.get(counter).get(textColumn);
+				if( text.startsWith("\"") ) 
+					text = text.substring(1, text.length());
+				if( text.endsWith("\"") ) 
+					text = text.substring(0, text.length()-1);
 				
 				if( !text.equals(UimaBioCUtils.readTokenizedText(jCas, clause))) {
 					throw new Exception("Mismatch between text in BioC and TSV\n" +
@@ -278,7 +218,6 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 				Map<String, String> inf = UimaBioCUtils.convertInfons(clause.getInfons());
 				inf.put("scidp-discourse-type", table.get(counter).get(discourseTypeColumn));
 				clause.setInfons(UimaBioCUtils.convertInfons(inf, jCas));
-				clause.addToIndexes();
 				
 				counter++;
 				if(counter >= table.size()) 

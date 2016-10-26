@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.bin;
+package edu.isi.bmkeg.sciDP.bin.dev;
 
 import java.io.File;
 
@@ -18,35 +18,33 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesFromOtherSections;
+import edu.isi.bmkeg.sciDP.uima.ae.HeuristicExperimentLabeling;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
+import edu.isi.bmkeg.uimaBioC.uima.ae.core.AddFeaturesToClauses;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
-import edu.isi.bmkeg.uimaBioC.uima.out.SaveExtractedAnnotations;
+import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsBioCDocuments;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
-public class SciDP_02_BioCToTsv {
+public class SciDP_08_LabelCompleteExperiments {
 
 	public static class Options {
 
-		@Option(name = "-nThreads", usage = "Number of threads", required = true, metaVar = "IN-DIRECTORY")
+		@Option(name = "-nThreads", usage = "Number of threads", required = true, metaVar = "N-THREADS")
 		public int nThreads;
 
-		@Option(name = "-biocDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
+		@Option(name = "-bioCDir", usage = "BioC Directory", required = true, metaVar = "BIOC-DIRECTORY")
 		public File biocDir;
-
-		@Option(name = "-outDir", usage = "Output Directory", required = true, metaVar = "OUT-FILE")
+		
+		@Option(name = "-outDir", usage = "Output Directory", required = true, metaVar = "OUT-DIRECTORY")
 		public File outDir;
 
-		@Option(name = "-clauseLevel", usage = "Output Directory", required = false, metaVar = "CLAUSE-LEVEL")
-		public Boolean clauseLevel = false;
+		@Option(name = "-outFormat", usage = "Output Format", required = true, metaVar = "OUT-FORMAT")
+		public String outFormat;
 
-		@Option(name = "-ann2Extract", usage = "Annotation Type to Extract", required = false, metaVar = "ANNOTATION")
-		public File ann2Ext;
-		
 	}
 
-	private static Logger logger = Logger.getLogger(SciDP_02_BioCToTsv.class);
+	private static Logger logger = Logger.getLogger(SciDP_08_LabelCompleteExperiments.class);
 
 	/**
 	 * @param args
@@ -98,46 +96,23 @@ public class SciDP_02_BioCToTsv {
 		//
 		// Strip out not results sections where we aren't interested in them
 		//
-		if( options.ann2Ext != null ) {
-			builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesFromOtherSections.class,
-					RemoveSentencesFromOtherSections.PARAM_ANNOT_2_EXTRACT, options.ann2Ext,
-					RemoveSentencesFromOtherSections.PARAM_KEEP_FLOATING_BOXES, "false"));
-		} else {
-			builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class,
-					RemoveSentencesNotInTitleAbstractBody.PARAM_KEEP_FLOATING_BOXES, "false"));
-		}
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
+						
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(HeuristicExperimentLabeling.class));		
 		
-		
-		if (options.clauseLevel ) 
-			if( options.ann2Ext != null) 			
-				builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveExtractedAnnotations.class,
-						SaveExtractedAnnotations.PARAM_DIR_PATH, options.outDir.getPath(),
-						SaveExtractedAnnotations.PARAM_KEEP_FLOATING_BOXES, "false",
-						SaveExtractedAnnotations.PARAM_ANNOT_2_EXTRACT, options.ann2Ext,
-						SaveExtractedAnnotations.PARAM_ADD_FRIES_CODES, "true", 
-						SaveExtractedAnnotations.PARAM_CLAUSE_LEVEL, "true"));
-			else 
-				builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveExtractedAnnotations.class,
-						SaveExtractedAnnotations.PARAM_DIR_PATH, options.outDir.getPath(),
-						SaveExtractedAnnotations.PARAM_KEEP_FLOATING_BOXES, "false",
-						SaveExtractedAnnotations.PARAM_ADD_FRIES_CODES, "true", 
-						SaveExtractedAnnotations.PARAM_CLAUSE_LEVEL, "true"));
+		String outFormat = null;
+		if( options.outFormat.toLowerCase().equals("xml") ) 
+			outFormat = SaveAsBioCDocuments.XML;
+		else if( options.outFormat.toLowerCase().equals("json") ) 
+			outFormat = SaveAsBioCDocuments.JSON;
 		else 
-			if( options.ann2Ext != null) 			
-				builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveExtractedAnnotations.class,
-						SaveExtractedAnnotations.PARAM_DIR_PATH, options.outDir.getPath(),
-						SaveExtractedAnnotations.PARAM_ANNOT_2_EXTRACT, options.ann2Ext,
-						SaveExtractedAnnotations.PARAM_KEEP_FLOATING_BOXES, "false",
-						SaveExtractedAnnotations.PARAM_ADD_FRIES_CODES, "true", 
-						SaveExtractedAnnotations.PARAM_CLAUSE_LEVEL, "false"));
-			else 
-				builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveExtractedAnnotations.class,
-						SaveExtractedAnnotations.PARAM_DIR_PATH, options.outDir.getPath(),
-						SaveExtractedAnnotations.PARAM_KEEP_FLOATING_BOXES, "false",
-						SaveExtractedAnnotations.PARAM_ADD_FRIES_CODES, "true", 
-						SaveExtractedAnnotations.PARAM_CLAUSE_LEVEL, "false"));
-		
+			throw new Exception("Output format " + options.outFormat + " not recognized");
 	
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(
+				SaveAsBioCDocuments.class, 
+				SaveAsBioCDocuments.PARAM_FILE_PATH, options.outDir.getPath(),
+				SaveAsBioCDocuments.PARAM_FORMAT, outFormat));
+		
 		cpeBuilder.setAnalysisEngine(builder.createAggregateDescription());
 
 		cpeBuilder.setMaxProcessingUnitThreatCount(options.nThreads);

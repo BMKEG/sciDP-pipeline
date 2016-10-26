@@ -19,11 +19,9 @@ import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
 import edu.isi.bmkeg.sciDP.uima.ae.InsertSciDpBackIntoBioC;
-import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesFromOtherSections;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
 import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsBioCDocuments;
-import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsSciDP;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
@@ -45,9 +43,6 @@ public class SciDP_06_sciDP_to_BioC {
 
 		@Option(name = "-outFormat", usage = "Output Format", required = true, metaVar = "OUT-FORMAT")
 		public String outFormat;
-		
-		@Option(name = "-ann2Extract", usage = "Annotation Type to Extract", required = false, metaVar = "ANNOTATION")
-		public String ann2Ext;
 
 	}
 
@@ -103,19 +98,10 @@ public class SciDP_06_sciDP_to_BioC {
 		//
 		// Strip out not results sections where we aren't interested in them
 		//
-		if( options.ann2Ext != null ) {
-			builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesFromOtherSections.class,
-					RemoveSentencesFromOtherSections.PARAM_ANNOT_2_EXTRACT, options.ann2Ext,
-					RemoveSentencesFromOtherSections.PARAM_KEEP_FLOATING_BOXES, "false"));
-		} else {
-			builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class,
-					RemoveSentencesNotInTitleAbstractBody.PARAM_KEEP_FLOATING_BOXES, "false"));
-		}
-
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
+		
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(InsertSciDpBackIntoBioC.class,
-				InsertSciDpBackIntoBioC.PARAM_INPUT_DIRECTORY, options.scidpDir.getPath(),
-				InsertSciDpBackIntoBioC.PARAM_KEEP_FLOATING_BOXES, "false",
-				InsertSciDpBackIntoBioC.PARAM_ANNOT_2_EXTRACT, options.ann2Ext));
+				InsertSciDpBackIntoBioC.PARAM_INPUT_DIRECTORY, options.scidpDir.getPath()));
 
 		String outFormat = null;
 		if( options.outFormat.toLowerCase().equals("xml") ) 

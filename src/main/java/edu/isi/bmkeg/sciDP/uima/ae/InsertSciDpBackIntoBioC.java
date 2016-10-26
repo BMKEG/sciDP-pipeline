@@ -38,19 +38,6 @@ public class InsertSciDpBackIntoBioC extends JCasAnnotator_ImplBase {
 	String inDirPath;
 	File inDir;
 
-	public final static String PARAM_ANNOT_2_EXTRACT = ConfigurationParameterFactory
-			.createConfigurationParameterName(InsertSciDpBackIntoBioC.class, "annot2Extract");
-	@ConfigurationParameter(mandatory = false, description = "The section heading *pattern* to extract")
-	String annot2Extract;
-	private Pattern patt;
-
-	public final static String PARAM_KEEP_FLOATING_BOXES = ConfigurationParameterFactory
-			.createConfigurationParameterName(InsertSciDpBackIntoBioC.class, "keepFloatsStr");
-	@ConfigurationParameter(mandatory = false, description = "Should we include floating boxes in the output.")
-	String keepFloatsStr;
-	Boolean keepFloats = false;
-	
-	
 	Pattern alignmentPattern = Pattern.compile("^(.{0,3}_+)");
 
 	private static Logger logger = Logger.getLogger(InsertSciDpBackIntoBioC.class);
@@ -61,13 +48,6 @@ public class InsertSciDpBackIntoBioC extends JCasAnnotator_ImplBase {
 
 		this.inDir = new File(this.inDirPath);
 
-		if (this.keepFloatsStr.toLowerCase().equals("true")) {
-			keepFloats = true;
-		}
-
-		if (this.annot2Extract != null)
-			this.patt = Pattern.compile(this.annot2Extract);
-		
 	}
 
 	public void process(JCas jCas) throws AnalysisEngineProcessException {
@@ -101,64 +81,13 @@ public class InsertSciDpBackIntoBioC extends JCasAnnotator_ImplBase {
 
 			List<String> baseLines = readLinesFromFile(baseFile);
 			List<String> outLines = readLinesFromFile(outputFile);
-			
+
 			if (baseLines.size() != outLines.size()) {
 				logger.warn("SciDP inputs and outputs don't match for " + uiD.getId());
 			}
-			
-			List<UimaBioCAnnotation> outerAnnotations = JCasUtil.selectCovered(UimaBioCAnnotation.class, uiD);
-			
-			if (this.annot2Extract != null) {
 
-				Set<UimaBioCAnnotation> selectedAnnotations = new HashSet<UimaBioCAnnotation>();
-				for (UimaBioCAnnotation uiA1 : outerAnnotations) {
+			this.dumpSectionToFile(jCas, baseLines, outLines, uiD);
 
-					Map<String, String> inf = UimaBioCUtils.convertInfons(uiA1.getInfons());
-					if (!inf.containsKey("type"))
-						continue;
-
-					if (!(inf.get("type").equals("formatting") && inf.get("value").equals("sec"))) {
-						continue;
-					}
-
-					if (this.patt != null) {
-						Matcher match = this.patt.matcher(inf.get("sectionHeading"));
-						if (!match.find()) {
-							continue;
-						}
-					}
-
-					selectedAnnotations.add(uiA1);
-
-				}
-
-				int maxL = 0;
-				UimaBioCAnnotation bestA = null;
-				for (UimaBioCAnnotation uiA : selectedAnnotations) {
-					int l = uiA.getEnd() - uiA.getBegin();
-					if (l > maxL) {
-						bestA = uiA;
-						maxL = l;
-					}
-				}
-
-				if (bestA != null) {
-
-					this.dumpSectionToFile(jCas, baseLines, outLines, bestA.getBegin(), bestA.getEnd());
-
-				} else {
-
-					logger.error("Couldn't find a section heading corresponding to " + this.annot2Extract + " in "
-							+ uiD.getId());
-
-				}
-
-			} else {
-
-				this.dumpSectionToFile(jCas, baseLines, outLines, uiD.getBegin(), uiD.getEnd());
-
-			}
-			
 			logger.info("Loading SciDP Annotations from " + uiD.getId() + " - COMPLETED");
 
 		} catch (Exception e) {
@@ -170,28 +99,28 @@ public class InsertSciDpBackIntoBioC extends JCasAnnotator_ImplBase {
 	}
 
 	private List<String> readLinesFromFile(File baseFile) throws FileNotFoundException, IOException {
-		
+
 		FileReader fileReader = new FileReader(baseFile);
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		List<String> lines = new ArrayList<String>();
 		String line = null;
 		while ((line = bufferedReader.readLine()) != null) {
-			if( line.length() > 0)
+			if (line.length() > 0)
 				lines.add(line);
 		}
 		bufferedReader.close();
-		
+
 		return lines;
 	}
 
-	private void dumpSectionToFile(JCas jCas, List<String> baseLines, List<String> outLines, int start, int end)
+	private void dumpSectionToFile(JCas jCas, List<String> baseLines, List<String> outLines, UimaBioCDocument uiD)
 			throws Exception {
 
 		int counter = 0;
-		
+
 		List<UimaBioCAnnotation> floats = new ArrayList<UimaBioCAnnotation>();
 		List<UimaBioCAnnotation> parags = new ArrayList<UimaBioCAnnotation>();
-		for (UimaBioCAnnotation a : JCasUtil.selectCovered(jCas, UimaBioCAnnotation.class, start, end)) {
+		for (UimaBioCAnnotation a : JCasUtil.selectCovered(jCas, UimaBioCAnnotation.class, uiD)) {
 			Map<String, String> infons = UimaBioCUtils.convertInfons(a.getInfons());
 			if (infons.containsKey("position") && infons.get("position").equals("float")) {
 				floats.add(a);
@@ -202,77 +131,59 @@ public class InsertSciDpBackIntoBioC extends JCasAnnotator_ImplBase {
 
 		}
 
-		List<Sentence> sentences = JCasUtil.selectCovered(jCas, Sentence.class, start, end);
+		List<Sentence> sentences = JCasUtil.selectCovered(jCas, Sentence.class, uiD);
+		List<Sentence> floatingSentences = new ArrayList<Sentence>();
 		String oldPCode = "";
 		SENTENCE_LOOP: for (Sentence s : sentences) {
 
-			if (!this.keepFloats) {
-				for (UimaBioCAnnotation f : floats) {
-					if (s.getBegin() >= f.getBegin() && s.getEnd() <= f.getEnd()) {
-						continue SENTENCE_LOOP;
-					}
+			for (UimaBioCAnnotation f : floats) {
+				if (s.getBegin() >= f.getBegin() && s.getEnd() <= f.getEnd()) {
+					floatingSentences.add(s);
+					continue SENTENCE_LOOP;
 				}
 			}
+		
+			counter = this.updateSentence(jCas, baseLines, outLines, s, counter);
 
-			//
-			// Identify exLinks, inLinks or headers
-			//
-			Map<Integer, Integer> currLvl = new HashMap<Integer, Integer>();
-
-			//
-			// Look for paragraphs
-			//
-			String pCode = "-";
-			for (int i = 0; i < parags.size(); i++) {
-				UimaBioCAnnotation p = parags.get(i);
-				if (s.getBegin() >= p.getBegin() && s.getEnd() <= p.getEnd()) {
-					UimaBioCUtils.convertInfons(p.getInfons()).get("value");
-					pCode = UimaBioCUtils.convertInfons(p.getInfons()).get("value") + i;
-					break;
-				}
-			}
-
-			List<UimaBioCAnnotation> clauseList = new ArrayList<UimaBioCAnnotation>();
-			for (UimaBioCAnnotation a : JCasUtil.selectCovered(jCas, UimaBioCAnnotation.class, s)) {
-				Map<String, String> infons = UimaBioCUtils.convertInfons(a.getInfons());
-				if (infons.get("type").equals("rubicon") && infons.get("value").equals("clause"))
-					clauseList.add(a);
-			}
+		}
+		
+		SENTENCE_LOOP: for (Sentence s : floatingSentences) {
 			
-			if(clauseList.size() == 0) {
-				UimaBioCDocument uiD = JCasUtil.selectSingle(jCas, UimaBioCDocument.class);
-				logger.warn("No Clauses Found in "+uiD.getId()+"("+s.getBegin() +"-"+s.getEnd()+"): " + s.getCoveredText());
-				
-				Map<String, String> infons = new HashMap<String, String>();
-				infons.put("type", "rubicon");
-				infons.put("value", "clause");
-				UimaBioCAnnotation newCl = UimaBioCUtils.createNewAnnotation(jCas, s.getBegin(), s.getEnd(), infons); 
-				clauseList.add(newCl);
-
-			}
-
-			for (UimaBioCAnnotation clause : clauseList) {
-				
-				if( !baseLines.get(counter).equals((UimaBioCUtils.readTokenizedText(jCas, clause) ))) {
-					throw new Exception("Mismatch between bioc and sciDp codes \n" +
-							"    " + baseLines.get(counter) + "\n" +
-							"    " + outLines.get(counter) + "\n");
-				}
-				
-				Map<String, String> inf = UimaBioCUtils.convertInfons(clause.getInfons());
-				inf.put("scidp-discourse-type", outLines.get(counter));
-				clause.setInfons(UimaBioCUtils.convertInfons(inf, jCas));
-				
-				counter++;
-				if(counter >= outLines.size()) 
-					return;
-				
-			}
-
+			counter = this.updateSentence(jCas, baseLines, outLines, s, counter);
+			
 		}
 
 	}
-	
+
+	private int updateSentence(JCas jCas,  List<String> baseLines, List<String> outLines, Sentence s, int counter) throws Exception {
+		
+		List<UimaBioCAnnotation> clauseList = new ArrayList<UimaBioCAnnotation>();
+		for (UimaBioCAnnotation a : JCasUtil.selectCovered(jCas, UimaBioCAnnotation.class, s)) {
+			Map<String, String> infons = UimaBioCUtils.convertInfons(a.getInfons());
+			if (infons.get("type").equals("rubicon") && infons.get("value").equals("clause"))
+				clauseList.add(a);
+		}
+
+		for (UimaBioCAnnotation clause : clauseList) {
+
+			if (!baseLines.get(counter).equals((UimaBioCUtils.readTokenizedText(jCas, clause)))) {
+				throw new Exception("Mismatch between bioc and sciDp codes \n" + "    " + baseLines.get(counter)
+						+ "\n" + "    " + outLines.get(counter) + "\n");
+			}
+
+			Map<String, String> inf = UimaBioCUtils.convertInfons(clause.getInfons());
+			inf.put("scidp-discourse-type", outLines.get(counter));
+			clause.setInfons(UimaBioCUtils.convertInfons(inf, jCas));
+
+			counter++;
+			if (counter >= outLines.size())
+				return counter;
+
+		}
+		
+		return counter;
+				
+	}
 
 	private int countChars(String s, String c) {
 

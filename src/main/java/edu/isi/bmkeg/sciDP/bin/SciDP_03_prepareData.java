@@ -18,12 +18,9 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesFromOtherSections;
+import edu.isi.bmkeg.sciDP.uima.out.SaveAsSciDP;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
-import edu.isi.bmkeg.uimaBioC.rubicon.TagPassagesAnnotator;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
-import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsSciDP;
-import edu.isi.bmkeg.uimaBioC.uima.out.SaveExtractedAnnotations;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
@@ -40,9 +37,6 @@ public class SciDP_03_prepareData {
 		@Option(name = "-outDir", usage = "Output Directory", required = true, metaVar = "OUT-FILE")
 		public File outDir;
 
-		@Option(name = "-ann2Extract", usage = "Annotation Type to Extract", required = false, metaVar = "ANNOTATION")
-		public String ann2Ext;
-		
 	}
 
 	private static Logger logger = Logger.getLogger(SciDP_03_prepareData.class);
@@ -97,22 +91,13 @@ public class SciDP_03_prepareData {
 		//
 		// Strip out not results sections where we aren't interested in them
 		//
-		if( options.ann2Ext != null ) {
-			builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesFromOtherSections.class,
-					RemoveSentencesFromOtherSections.PARAM_ANNOT_2_EXTRACT, options.ann2Ext,
-					RemoveSentencesFromOtherSections.PARAM_KEEP_FLOATING_BOXES, "false"));
-		} else {
-			builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class,
-					RemoveSentencesNotInTitleAbstractBody.PARAM_KEEP_FLOATING_BOXES, "false"));
-		}
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
 
 		//
 		// Save Clauses in format used by SciDP. 
 		//
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveAsSciDP.class,
-				SaveAsSciDP.PARAM_DIR_PATH, options.outDir.getPath(),
-				SaveAsSciDP.PARAM_KEEP_FLOATING_BOXES, "false",
-				SaveAsSciDP.PARAM_ANNOT_2_EXTRACT, options.ann2Ext));
+				SaveAsSciDP.PARAM_DIR_PATH, options.outDir.getPath()));
 		
 		cpeBuilder.setAnalysisEngine(builder.createAggregateDescription());
 
