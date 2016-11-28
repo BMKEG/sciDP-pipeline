@@ -68,7 +68,6 @@ public class SciDP_1_SciDP2Tsv {
 		
 		String[] args01 = new String[] { 
 				"-biocDir", options.inDir + "/scidp_bioc",
-				"-clauseLevel", 
 				"-nThreads", options.nThreads + "",
 				"-outDir", options.inDir + "/tsv"
 				};

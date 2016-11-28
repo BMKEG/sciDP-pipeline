@@ -11,6 +11,7 @@ import org.kohsuke.args4j.Option;
 import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_00_SimpleRunNxml2Txt;
 import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_01_Nxml2txt_to_BioC;
 import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_02_preprocessToBioC;
+import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_03_BioCToClauseTsv;
 
 /**
  * This script runs through serialized JSON files from the model and converts
@@ -102,7 +103,15 @@ public class SciDP_0_Nxml2SciDP {
 				"-nThreads", options.nThreads + "",
 				};
 		SciDP_03_prepareData.main(args03);
-				
+
+		String[] args04 = new String[] { 
+				"-biocDir", options.inDir + "/preprocessed_bioc",
+				"-nThreads", options.nThreads + "",
+				"-outDir", options.inDir + "/tsv"
+				};
+		
+		UIMABIOC_03_BioCToClauseTsv.main(args04);
+
 	}
 
 }
