@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.isi.bmkeg</groupId>
-	<artifactId>sciDP-pipeline</artifactId>
+	<artifactId>sciDT-pipeline</artifactId>
 	<version>0.1.1-SNAPSHOT</version>
 
 	<properties>
 	</properties>
 	
-	<name>Scientific Discourse Parser ('SciDP')</name>
+	<name>Scientific Discourse Tagger Pipeline ('SciDT-Pipeline')</name>
 
 	<build>
 		<plugins>

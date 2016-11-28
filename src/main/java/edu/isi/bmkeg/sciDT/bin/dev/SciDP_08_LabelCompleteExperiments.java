@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.bin.dev;
+package edu.isi.bmkeg.sciDT.bin.dev;
 
 import java.io.File;
 
@@ -18,7 +18,7 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.sciDP.uima.ae.HeuristicExperimentLabeling;
+import edu.isi.bmkeg.sciDT.uima.ae.HeuristicExperimentLabeling;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.AddFeaturesToClauses;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;

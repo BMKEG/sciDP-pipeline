@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.uima.ae;
+package edu.isi.bmkeg.sciDT.uima.ae;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ import bioc.BioCCollection;
 import bioc.type.UimaBioCAnnotation;
 import bioc.type.UimaBioCDocument;
 import bioc.type.UimaBioCLocation;
-import edu.isi.bmkeg.sciDP.drools.ClauseFeatures;
+import edu.isi.bmkeg.sciDT.drools.ClauseFeatures;
 import edu.isi.bmkeg.uimaBioC.UimaBioCUtils;
 
 public class HeuristicExperimentLabeling extends JCasAnnotator_ImplBase {

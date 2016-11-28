@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.bin;
+package edu.isi.bmkeg.sciDT.bin;
 
 import java.io.File;
 
@@ -18,22 +18,22 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.sciDP.uima.ae.InsertSciDpBackIntoBioC;
+import edu.isi.bmkeg.sciDT.uima.ae.InsertTsvBackIntoBioC;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
 import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsBioCDocuments;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
-public class SciDP_06_sciDP_to_BioC {
+public class SciDP_07_Tsv_to_BioC {
 
 	public static class Options {
 
 		@Option(name = "-nThreads", usage = "Number of threads", required = true, metaVar = "N-THREADS")
 		public int nThreads;
 
-		@Option(name = "-sciDPDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
-		public File scidpDir;
+		@Option(name = "-tsvDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
+		public File tsvDir;
 
 		@Option(name = "-bioCDir", usage = "BioC Directory", required = true, metaVar = "BIOC-DIRECTORY")
 		public File biocDir;
@@ -46,7 +46,7 @@ public class SciDP_06_sciDP_to_BioC {
 
 	}
 
-	private static Logger logger = Logger.getLogger(SciDP_06_sciDP_to_BioC.class);
+	private static Logger logger = Logger.getLogger(SciDP_07_Tsv_to_BioC.class);
 
 	/**
 	 * @param args
@@ -100,8 +100,8 @@ public class SciDP_06_sciDP_to_BioC {
 		//
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
 		
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(InsertSciDpBackIntoBioC.class,
-				InsertSciDpBackIntoBioC.PARAM_INPUT_DIRECTORY, options.scidpDir.getPath()));
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(InsertTsvBackIntoBioC.class,
+				InsertTsvBackIntoBioC.PARAM_INPUT_DIRECTORY, options.tsvDir.getPath()));
 
 		String outFormat = null;
 		if( options.outFormat.toLowerCase().equals("xml") ) 

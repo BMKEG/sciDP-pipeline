@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.uima.ae;
+package edu.isi.bmkeg.sciDT.uima.ae;
 
 import java.io.BufferedReader;
 import java.io.File;

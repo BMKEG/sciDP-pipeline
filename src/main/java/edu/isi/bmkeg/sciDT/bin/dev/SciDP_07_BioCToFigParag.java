@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.bin;
+package edu.isi.bmkeg.sciDT.bin.dev;
 
 import java.io.File;
 
@@ -18,13 +18,12 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.sciDP.uima.out.SaveAsSciDP;
-import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
+import edu.isi.bmkeg.sciDT.uima.out.SaveLinksBetweenFiguresAndParagraphs;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
-public class SciDP_03_prepareData {
+public class SciDP_07_BioCToFigParag {
 
 	public static class Options {
 
@@ -37,9 +36,10 @@ public class SciDP_03_prepareData {
 		@Option(name = "-outDir", usage = "Output Directory", required = true, metaVar = "OUT-FILE")
 		public File outDir;
 
+		
 	}
 
-	private static Logger logger = Logger.getLogger(SciDP_03_prepareData.class);
+	private static Logger logger = Logger.getLogger(SciDP_07_BioCToFigParag.class);
 
 	/**
 	 * @param args
@@ -87,17 +87,10 @@ public class SciDP_03_prepareData {
 		// Some sentences include headers that don't end in periods
 		//
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(FixSentencesFromHeadings.class));
-		
-		//
-		// Strip out not results sections where we aren't interested in them
-		//
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
 
-		//
-		// Save Clauses in format used by SciDP. 
-		//
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveAsSciDP.class,
-				SaveAsSciDP.PARAM_DIR_PATH, options.outDir.getPath()));
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveLinksBetweenFiguresAndParagraphs.class,
+				SaveLinksBetweenFiguresAndParagraphs.PARAM_DIR_PATH, options.outDir.getPath(),
+				SaveLinksBetweenFiguresAndParagraphs.PARAM_CLAUSE_LEVEL, "false"));
 		
 		cpeBuilder.setAnalysisEngine(builder.createAggregateDescription());
 

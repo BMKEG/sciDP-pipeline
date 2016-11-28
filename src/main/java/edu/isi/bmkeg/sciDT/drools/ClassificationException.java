@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.drools;
+package edu.isi.bmkeg.sciDT.drools;
 
 public class ClassificationException extends Exception {
 

@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.uima.out;
+package edu.isi.bmkeg.sciDT.uima.out;
 
 import java.io.BufferedWriter;
 import java.io.File;

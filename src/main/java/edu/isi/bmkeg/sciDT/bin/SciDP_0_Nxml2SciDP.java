@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.bin;
+package edu.isi.bmkeg.sciDT.bin;
 
 import java.io.File;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDP.bin.dev;
+package edu.isi.bmkeg.sciDT.bin.dev;
 
 import java.io.File;
 
@@ -18,12 +18,12 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.sciDP.uima.out.SaveLinksBetweenFiguresAndParagraphs;
+import edu.isi.bmkeg.sciDT.uima.out.SaveFigureCaptions;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
-public class SciDP_07_BioCToFigParag {
+public class SciDP_06_BioCToFigCaptions {
 
 	public static class Options {
 
@@ -39,7 +39,7 @@ public class SciDP_07_BioCToFigParag {
 		
 	}
 
-	private static Logger logger = Logger.getLogger(SciDP_07_BioCToFigParag.class);
+	private static Logger logger = Logger.getLogger(SciDP_06_BioCToFigCaptions.class);
 
 	/**
 	 * @param args
@@ -88,9 +88,9 @@ public class SciDP_07_BioCToFigParag {
 		//
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(FixSentencesFromHeadings.class));
 
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveLinksBetweenFiguresAndParagraphs.class,
-				SaveLinksBetweenFiguresAndParagraphs.PARAM_DIR_PATH, options.outDir.getPath(),
-				SaveLinksBetweenFiguresAndParagraphs.PARAM_CLAUSE_LEVEL, "false"));
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveFigureCaptions.class,
+				SaveFigureCaptions.PARAM_DIR_PATH, options.outDir.getPath(),
+				SaveFigureCaptions.PARAM_CLAUSE_LEVEL, "false"));
 		
 		cpeBuilder.setAnalysisEngine(builder.createAggregateDescription());
 
