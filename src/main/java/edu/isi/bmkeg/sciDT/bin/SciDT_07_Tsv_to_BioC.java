@@ -18,28 +18,35 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.sciDT.uima.out.SaveAsSciDP;
+import edu.isi.bmkeg.sciDT.uima.ae.InsertTsvBackIntoBioC;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
+import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsBioCDocuments;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
-public class SciDP_03_prepareData {
+public class SciDT_07_Tsv_to_BioC {
 
 	public static class Options {
 
-		@Option(name = "-nThreads", usage = "Number of threads", required = true, metaVar = "IN-DIRECTORY")
+		@Option(name = "-nThreads", usage = "Number of threads", required = true, metaVar = "N-THREADS")
 		public int nThreads;
 
-		@Option(name = "-biocDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
-		public File biocDir;
+		@Option(name = "-tsvDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
+		public File tsvDir;
 
-		@Option(name = "-outDir", usage = "Output Directory", required = true, metaVar = "OUT-FILE")
+		@Option(name = "-bioCDir", usage = "BioC Directory", required = true, metaVar = "BIOC-DIRECTORY")
+		public File biocDir;
+		
+		@Option(name = "-outDir", usage = "Output Directory", required = true, metaVar = "OUT-DIRECTORY")
 		public File outDir;
+
+		@Option(name = "-outFormat", usage = "Output Format", required = true, metaVar = "OUT-FORMAT")
+		public String outFormat;
 
 	}
 
-	private static Logger logger = Logger.getLogger(SciDP_03_prepareData.class);
+	private static Logger logger = Logger.getLogger(SciDT_07_Tsv_to_BioC.class);
 
 	/**
 	 * @param args
@@ -87,17 +94,29 @@ public class SciDP_03_prepareData {
 		// Some sentences include headers that don't end in periods
 		//
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(FixSentencesFromHeadings.class));
-		
+
 		//
 		// Strip out not results sections where we aren't interested in them
 		//
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
+		
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(InsertTsvBackIntoBioC.class,
+				InsertTsvBackIntoBioC.PARAM_INPUT_DIRECTORY, options.tsvDir.getPath()));
 
-		//
-		// Save Clauses in format used by SciDP. 
-		//
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(SaveAsSciDP.class,
-				SaveAsSciDP.PARAM_DIR_PATH, options.outDir.getPath()));
+		String outFormat = null;
+		if( options.outFormat.toLowerCase().equals("xml") ) 
+			outFormat = SaveAsBioCDocuments.XML;
+		else if( options.outFormat.toLowerCase().equals("json") ) 
+			outFormat = SaveAsBioCDocuments.JSON;
+		else 
+			throw new Exception("Output format " + options.outFormat + " not recognized");
+	
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(
+				SaveAsBioCDocuments.class, 
+				SaveAsBioCDocuments.PARAM_FILE_PATH,
+				options.outDir.getPath(),
+				SaveAsBioCDocuments.PARAM_FORMAT,
+				outFormat));
 		
 		cpeBuilder.setAnalysisEngine(builder.createAggregateDescription());
 

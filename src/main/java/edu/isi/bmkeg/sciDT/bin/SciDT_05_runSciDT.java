@@ -5,7 +5,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,41 +19,47 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 /**
- * This script trains the sciDP neural net classifier on a set of files 
+ * This script runs the sciDP neural net classifier on a set of files 
  * (we will need to set up the input and output of the data for this):
- * It does matter where you run this script from, so not sure how to execute in the context of this
+ * 
+ * Supposed to run this with Anaconda to include all the correct paths and data points.
  * 
  * python /usr1/shared/projects/bigmech/tools/sciDP/nn_passage_tagger.py 
  * 		/usr1/shared/projects/bigmech/data/embeddings/pyysalo_et_al/wikipedia-pubmed-and-PMC-w2v.txt.gz 
  * 		--use_attention 
- *      --train /usr1/shared/projects/bigmech/data/discourse_tagging/train+test_data/passage_train.txt 
+ * 		--test_files 15550174_scidp.txt 20179705_scidp.txt 20333297_scidp.txt
+ * 					 23392125_scidp.txt 23706742_scidp.txt 24467442_scidp.txt 
+ * 					 24602610_scidp.txt 25449683_scidp.txt 26816343_scidp.txt
  * 
  * @author Gully
  * 
  */
-public class SciDP_04_trainSciDP {
+public class SciDT_05_runSciDT {
 
 	public static class Options {
 
-		@Option(name = "-nnTaggerPath", usage = "Path to the nn_passage_tagger script", required = true, metaVar = "PATH")
-		public File taggerPath;
-
-		@Option(name = "-modelPath", usage = "Path to the word2vec embeddings", required = true, metaVar = "MODEL")
-		public File modelPath;
+		@Option(name = "-inDir", usage = "Input Directory", required = true, metaVar = "INPUT")
+		public File inDir;
 
 		@Option(name = "-trainPath", usage = "Path to the training files", required = true, metaVar = "TRAIN")
 		public File trainPath;
+		
+		@Option(name = "-nnTaggerPath", usage = "Path to the nn_passage_tagger script", required = true, metaVar = "PATH")
+		public File taggerPath;
 
-		@Option(name = "-pythonPath", usage = "Path to the python executable", required = true, metaVar = "TRAIN")
-		public File pythonPath;
+		@Option(name = "-modelPath", usage = "Path to the word2vec embeddings", required = true, metaVar = "PATH")
+		public File modelPath;
 
 		@Option(name = "-suffix", usage = "Altered suffix of *.nxml files", required = false, metaVar = "SCIDP SUFFIX")
 		public String suffix = "_scidp.txt";
 		
+		@Option(name = "-pythonPath", usage = "Path to the python executable", required = true, metaVar = "TRAIN")
+		public File pythonPath;
+		
 	}
 
 	private static Logger logger = Logger
-			.getLogger(SciDP_05_runSciDP.class);
+			.getLogger(SciDT_05_runSciDT.class);
 
 	/**
 	 * @param args
@@ -86,13 +94,39 @@ public class SciDP_04_trainSciDP {
 		
 		String[] fileTypes = {fileEx};
 		
-		String command = options.taggerPath.getPath() 
-						+ " " + options.modelPath
-						+ " --use_attention --train "
-						+ options.trainPath;
-				
-		runPythonCommand(command, options.pythonPath, options.trainPath.getParentFile());
+		@SuppressWarnings("unchecked")
+		Iterator<File> it = FileUtils.iterateFiles(options.inDir, fileTypes, true);
+		
+		int counter = 0;
+		String filesToRun = "";
+		while( it.hasNext() ) {
 			
+			File f = it.next();
+			
+			if( !f.getName().endsWith(options.suffix) )
+				continue;
+			
+			if( counter == 10 || !it.hasNext() ) {
+				
+				String command = options.taggerPath.getPath() 
+						+ " " + options.modelPath 
+						+ " --use_attention --test_files "
+						+ filesToRun;
+				
+				runPythonCommand(command, options.pythonPath, options.trainPath.getParentFile());
+				
+				counter = 0;
+				filesToRun = "";
+				
+			} else {
+				
+				filesToRun += " " + f.getPath();
+				counter++;
+				
+			}
+			
+		}
+		
 	}
 	
 	private static void runPythonCommand(String command, File pythonPath, File trainDir) throws Exception {
@@ -133,7 +167,6 @@ public class SciDP_04_trainSciDP {
 			buf.close();
 			in.close();
 		}
-		
 	}
 	
 	

@@ -17,7 +17,7 @@ import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_03_BioCToClauseTsv;
  * @author Gully
  * 
  */
-public class SciDP_1_SciDP2Tsv {
+public class SciDT_1_SciDT2Tsv {
 
 	public static class Options {
 
@@ -30,7 +30,7 @@ public class SciDP_1_SciDP2Tsv {
 	}
 
 	private static Logger logger = Logger
-			.getLogger(SciDP_1_SciDP2Tsv.class);
+			.getLogger(SciDT_1_SciDT2Tsv.class);
 
 	/**
 	 * @param args
@@ -64,7 +64,7 @@ public class SciDP_1_SciDP2Tsv {
 				"-outFormat", "json",
 				"-sciDPDir", options.inDir + "/scidp"};
 	
-		SciDP_06_sciDP_to_BioC.main(args00);
+		SciDT_06_sciDTto_BioC.main(args00);
 		
 		String[] args01 = new String[] { 
 				"-biocDir", options.inDir + "/scidp_bioc",

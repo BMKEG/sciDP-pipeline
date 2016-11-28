@@ -20,7 +20,7 @@ import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_03_BioCToClauseTsv;
  * @author Gully
  * 
  */
-public class SciDP_0_Nxml2SciDP {
+public class SciDT_0_Nxml2SciDT {
 
 	public static class Options {
 
@@ -34,7 +34,7 @@ public class SciDP_0_Nxml2SciDP {
 		public int nThreads;
 
 		@Option(name = "-maxSentenceLength", usage = "Maximum length of sentences to be parsed", required = false, metaVar = "MAX-PARSE-LENGTH")
-		public int maxSentenceLength;
+		public int maxSentenceLength = 500;
 
 		@Option(name = "-friesDir", usage = "Fries Directory", required = false, metaVar = "FRIES-DATA")
 		public File friesDir;
@@ -42,7 +42,7 @@ public class SciDP_0_Nxml2SciDP {
 	}
 
 	private static Logger logger = Logger
-			.getLogger(SciDP_0_Nxml2SciDP.class);
+			.getLogger(SciDT_0_Nxml2SciDT.class);
 
 	/**
 	 * @param args
@@ -99,10 +99,10 @@ public class SciDP_0_Nxml2SciDP {
 		
 		String[] args03 = new String[] { 
 				"-biocDir", options.inDir + "/preprocessed_bioc", 
-				"-outDir", options.inDir + "/scidp",
+				"-outDir", options.inDir + "/scidt",
 				"-nThreads", options.nThreads + "",
 				};
-		SciDP_03_prepareData.main(args03);
+		SciDT_03_prepareData.main(args03);
 
 		String[] args04 = new String[] { 
 				"-biocDir", options.inDir + "/preprocessed_bioc",
