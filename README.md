@@ -26,7 +26,7 @@ This system is specfically designed to prepare data for the 'Science Discourse T
 
 This will build a fully assembled jar file here: 
 
-4. Running the system is best performed using the provided shell script that executes the . 
+4. Running the system is best performed using the provided shell script that executes the `edu.isi.bmkeg.sciDT.bin.SciDT_0_Nxml2SciDT` class. 
 
  ```Shell
  ./runPipeline /path/to/folder/ #nThreads /path/to/nxml2txt/executable
@@ -41,4 +41,4 @@ This should run to generate a number of files in subfolders. These are:
 * scidt		
 * tsv
 
-The input files for the main `sciDT` system are in (A) the `scidt` folder and (B) the `tsv` folder 
+The input files for the main `sciDT` system are in (A) the `scidt` folder and (B) the `tsv` folder
