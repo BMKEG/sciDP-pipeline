@@ -12,6 +12,7 @@ import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_00_SimpleRunNxml2Txt;
 import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_01_Nxml2txt_to_BioC;
 import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_02_preprocessToBioC;
 import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_03_BioCToClauseTsv;
+import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_03_BioCToSentenceTsv;
 
 /**
  * This script runs through serialized JSON files from the model and converts
@@ -107,10 +108,16 @@ public class SciDT_0_Nxml2SciDT {
 		String[] args04 = new String[] { 
 				"-biocDir", options.inDir + "/preprocessed_bioc",
 				"-nThreads", options.nThreads + "",
-				"-outDir", options.inDir + "/tsv"
+				"-outDir", options.inDir + "/tsv_clause"
 				};
-		
 		UIMABIOC_03_BioCToClauseTsv.main(args04);
+
+		String[] args05 = new String[] { 
+				"-biocDir", options.inDir + "/preprocessed_bioc",
+				"-nThreads", options.nThreads + "",
+				"-outDir", options.inDir + "/tsv_sentence"
+				};
+		UIMABIOC_03_BioCToSentenceTsv.main(args05);
 
 	}
 
