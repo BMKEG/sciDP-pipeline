@@ -7,7 +7,7 @@ NXML2TXT_PATH=$3
 if [ -z $1 ] ; 
 then
   	echo "USAGE: DIR_PATH N-THREADS"
-	exit
+	
 fi
 
 PWD=`pwd`

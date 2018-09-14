@@ -23,7 +23,7 @@ import edu.isi.bmkeg.uimaBioC.bin.UIMABIOC_03_BioCToSentenceTsv;
  */
 public class SciDT_0_Nxml2SciDT {
 
-	public static class Options {
+	public static class Options { 
 
 		@Option(name = "-inDir", usage = "Input Directory", required = true, metaVar = "INPUT")
 		public File inDir;
@@ -80,6 +80,7 @@ public class SciDT_0_Nxml2SciDT {
 		String[] args01 = new String[] { 
 				"-inDir", options.inDir + "/nxml2txt", 
 				"-outDir", options.inDir + "/bioc",
+				"-refDir", options.inDir + "/refs",
 				"-outFormat", "json"
 				};
 		UIMABIOC_01_Nxml2txt_to_BioC.main(args01);

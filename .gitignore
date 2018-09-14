@@ -3,4 +3,6 @@
 .history
 .project
 .settings/
+.idea/
 target/
+*.iml

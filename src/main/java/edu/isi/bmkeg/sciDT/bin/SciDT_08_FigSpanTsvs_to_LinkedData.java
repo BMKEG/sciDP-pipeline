@@ -18,35 +18,39 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.sciDT.uima.ae.InsertSciDTBackIntoBioC;
+import edu.isi.bmkeg.sciDT.uima.ae.InsertTsvBackIntoBioC;
+import edu.isi.bmkeg.sciDT.uima.out.SaveAsBiocCollectionLinkedData;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
 import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsBioCDocuments;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
-public class SciDT_06_sciDTto_BioC {
+public class SciDT_08_FigSpanTsvs_to_LinkedData {
 
 	public static class Options {
 
 		@Option(name = "-nThreads", usage = "Number of threads", required = true, metaVar = "N-THREADS")
 		public int nThreads;
 
-		@Option(name = "-sciDTDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
-		public File scidtDir;
+		@Option(name = "-tsvDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
+		public File tsvDir;
 
 		@Option(name = "-bioCDir", usage = "BioC Directory", required = true, metaVar = "BIOC-DIRECTORY")
 		public File biocDir;
+
+		@Option(name = "-tempDir", usage = "Temporary Directory for intermediate files", required = true, metaVar = "TEMP-DIR")
+		public File tempDir;
+
+		@Option(name = "-outFile", usage = "Output BioC Collection File", required = true, metaVar = "OUT-FILE")
+		public File outFile;
+
+		//@Option(name = "-context", usage = "JSON-LD Context file ", required = true, metaVar = "JSON-LD")
+		//public File jsonLdFile;
 		
-		@Option(name = "-outDir", usage = "Output Directory", required = true, metaVar = "OUT-DIRECTORY")
-		public File outDir;
-
-		@Option(name = "-outFormat", usage = "Output Format", required = true, metaVar = "OUT-FORMAT")
-		public String outFormat;
-
 	}
 
-	private static Logger logger = Logger.getLogger(SciDT_06_sciDTto_BioC.class);
+	private static Logger logger = Logger.getLogger(SciDT_08_FigSpanTsvs_to_LinkedData.class);
 
 	/**
 	 * @param args
@@ -78,9 +82,8 @@ public class SciDT_06_sciDTto_BioC {
 		TypeSystemDescription typeSystem = TypeSystemDescriptionFactory.createTypeSystemDescription("bioc.TypeSystem");
 
 		CollectionReaderDescription crDesc = CollectionReaderFactory.createDescription(BioCCollectionReader.class,
-				typeSystem, BioCCollectionReader.INPUT_DIRECTORY, options.biocDir.getPath(),
-				BioCCollectionReader.OUTPUT_DIRECTORY, options.outDir.getPath(), BioCCollectionReader.PARAM_FORMAT,
-				BioCCollectionReader.JSON);
+				typeSystem, BioCCollectionReader.INPUT_DIRECTORY, options.biocDir.getPath(), 
+				BioCCollectionReader.PARAM_FORMAT, BioCCollectionReader.JSON);
 
 		CpeBuilder cpeBuilder = new CpeBuilder();
 		cpeBuilder.setReader(crDesc);
@@ -95,29 +98,24 @@ public class SciDT_06_sciDTto_BioC {
 		//
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(FixSentencesFromHeadings.class));
 
-		//
-		// Strip out not results sections where we aren't interested in them
-		//
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
-		
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(InsertSciDTBackIntoBioC.class,
-				InsertSciDTBackIntoBioC.PARAM_INPUT_DIRECTORY, options.scidtDir.getPath()));
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(InsertTsvBackIntoBioC.class,
+				InsertTsvBackIntoBioC.PARAM_INPUT_DIRECTORY, options.tsvDir.getPath()));
 
-		String outFormat = null;
-		if( options.outFormat.toLowerCase().equals("xml") ) 
-			outFormat = SaveAsBioCDocuments.XML;
-		else if( options.outFormat.toLowerCase().equals("json") ) 
-			outFormat = SaveAsBioCDocuments.JSON;
-		else 
-			throw new Exception("Output format " + options.outFormat + " not recognized");
-	
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(
+				SaveAsBiocCollectionLinkedData.class,
+				SaveAsBiocCollectionLinkedData.PARAM_FILE_PATH,
+				options.outFile.getPath(),
+				SaveAsBiocCollectionLinkedData.PARAM_TEMP_PATH,
+				options.tempDir.getPath()));
+		
+		/*CHECK FOR BUGS
+		 * builder.add(AnalysisEngineFactory.createPrimitiveDescription(
 				SaveAsBioCDocuments.class, 
 				SaveAsBioCDocuments.PARAM_FILE_PATH,
-				options.outDir.getPath(),
+				options.tempDir.getPath(),
 				SaveAsBioCDocuments.PARAM_FORMAT,
-				outFormat));
-		
+				SaveAsBioCDocuments.JSON));*/
+
 		cpeBuilder.setAnalysisEngine(builder.createAggregateDescription());
 
 		cpeBuilder.setMaxProcessingUnitThreatCount(options.nThreads);

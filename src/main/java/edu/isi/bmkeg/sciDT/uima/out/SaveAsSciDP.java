@@ -33,7 +33,6 @@ import bioc.type.UimaBioCDocument;
 import bioc.type.UimaBioCLocation;
 import bioc.type.UimaBioCPassage;
 import edu.isi.bmkeg.uimaBioC.UimaBioCUtils;
-import edu.isi.bmkeg.uimaBioC.rubicon.MatchReachAndNxmlText;
 
 public class SaveAsSciDP extends JCasAnnotator_ImplBase {
 

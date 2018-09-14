@@ -42,7 +42,7 @@ public class SaveLinksBetweenFiguresAndParagraphs extends JCasAnnotator_ImplBase
 	private Pattern patt;
 
 	public final static String PARAM_DIR_PATH = ConfigurationParameterFactory
-			.createConfigurationParameterName(SaveLinksBetweenFiguresAndParagraphs.class, "outDirPath");
+			.createConfigurationParameterName(SaveLinksBetweenFiguresAndParagraphs.class, "outFilePath");
 	@ConfigurationParameter(mandatory = true, description = "The path to the output directory.")
 	String outDirPath;
 

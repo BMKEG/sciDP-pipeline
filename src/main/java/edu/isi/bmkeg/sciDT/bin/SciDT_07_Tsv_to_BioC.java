@@ -18,6 +18,8 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
+import edu.isi.bmkeg.sciDT.uima.ae.AddEvidenceFragmentAnnotations;
+import edu.isi.bmkeg.sciDT.uima.ae.AddFigureCaptionsToBioC;
 import edu.isi.bmkeg.sciDT.uima.ae.InsertTsvBackIntoBioC;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
@@ -98,10 +100,14 @@ public class SciDT_07_Tsv_to_BioC {
 		//
 		// Strip out not results sections where we aren't interested in them
 		//
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
+		//builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
 		
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(InsertTsvBackIntoBioC.class,
 				InsertTsvBackIntoBioC.PARAM_INPUT_DIRECTORY, options.tsvDir.getPath()));
+
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(AddFigureCaptionsToBioC.class));
+		
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(AddEvidenceFragmentAnnotations.class));
 
 		String outFormat = null;
 		if( options.outFormat.toLowerCase().equals("xml") ) 

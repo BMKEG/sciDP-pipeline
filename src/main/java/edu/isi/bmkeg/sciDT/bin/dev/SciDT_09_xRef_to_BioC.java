@@ -1,4 +1,4 @@
-package edu.isi.bmkeg.sciDT.bin;
+package edu.isi.bmkeg.sciDT.bin.dev;
 
 import java.io.File;
 
@@ -18,24 +18,24 @@ import org.uimafit.factory.CollectionReaderFactory;
 import org.uimafit.factory.CpeBuilder;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 
-import edu.isi.bmkeg.sciDT.uima.ae.InsertSciDTBackIntoBioC;
+import edu.isi.bmkeg.sciDT.uima.ae.MergeBioCData;
 import edu.isi.bmkeg.uimaBioC.rubicon.RemoveSentencesNotInTitleAbstractBody;
 import edu.isi.bmkeg.uimaBioC.uima.ae.core.FixSentencesFromHeadings;
 import edu.isi.bmkeg.uimaBioC.uima.out.SaveAsBioCDocuments;
 import edu.isi.bmkeg.uimaBioC.uima.readers.BioCCollectionReader;
 import edu.isi.bmkeg.uimaBioC.utils.StatusCallbackListenerImpl;
 
-public class SciDT_06_sciDTto_BioC {
+public class SciDT_09_xRef_to_BioC {
 
 	public static class Options {
 
 		@Option(name = "-nThreads", usage = "Number of threads", required = true, metaVar = "N-THREADS")
 		public int nThreads;
 
-		@Option(name = "-sciDTDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
-		public File scidtDir;
+		@Option(name = "-inDir", usage = "Input Directory", required = true, metaVar = "IN-DIRECTORY")
+		public File inDir;
 
-		@Option(name = "-bioCDir", usage = "BioC Directory", required = true, metaVar = "BIOC-DIRECTORY")
+		@Option(name = "-bioCDir", usage = "Extra BioC Directory", required = true, metaVar = "BIOC-DIRECTORY")
 		public File biocDir;
 		
 		@Option(name = "-outDir", usage = "Output Directory", required = true, metaVar = "OUT-DIRECTORY")
@@ -46,7 +46,7 @@ public class SciDT_06_sciDTto_BioC {
 
 	}
 
-	private static Logger logger = Logger.getLogger(SciDT_06_sciDTto_BioC.class);
+	private static Logger logger = Logger.getLogger(SciDT_09_xRef_to_BioC.class);
 
 	/**
 	 * @param args
@@ -78,7 +78,7 @@ public class SciDT_06_sciDTto_BioC {
 		TypeSystemDescription typeSystem = TypeSystemDescriptionFactory.createTypeSystemDescription("bioc.TypeSystem");
 
 		CollectionReaderDescription crDesc = CollectionReaderFactory.createDescription(BioCCollectionReader.class,
-				typeSystem, BioCCollectionReader.INPUT_DIRECTORY, options.biocDir.getPath(),
+				typeSystem, BioCCollectionReader.INPUT_DIRECTORY, options.inDir.getPath(),
 				BioCCollectionReader.OUTPUT_DIRECTORY, options.outDir.getPath(), BioCCollectionReader.PARAM_FORMAT,
 				BioCCollectionReader.JSON);
 
@@ -100,8 +100,10 @@ public class SciDT_06_sciDTto_BioC {
 		//
 		builder.add(AnalysisEngineFactory.createPrimitiveDescription(RemoveSentencesNotInTitleAbstractBody.class));
 		
-		builder.add(AnalysisEngineFactory.createPrimitiveDescription(InsertSciDTBackIntoBioC.class,
-				InsertSciDTBackIntoBioC.PARAM_INPUT_DIRECTORY, options.scidtDir.getPath()));
+		builder.add(AnalysisEngineFactory.createPrimitiveDescription(MergeBioCData.class,
+				MergeBioCData.PARAM_INPUT_DIRECTORY, options.biocDir.getPath(),
+				MergeBioCData.PARAM_FORMAT, options.outFormat
+				));
 
 		String outFormat = null;
 		if( options.outFormat.toLowerCase().equals("xml") ) 

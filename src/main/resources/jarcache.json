@@ -1,0 +1,7 @@
+[
+  {
+    "Content-Location": "http://sciknowengine.isi.edu/sciDT",
+    "X-Classpath": "contexts/scidt_context.json",
+    "Content-Type": "application/ld+json"
+  }
+]

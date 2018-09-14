@@ -1,17 +1,9 @@
 package edu.isi.bmkeg.sciDT.uima.ae;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
+import bioc.type.UimaBioCAnnotation;
+import bioc.type.UimaBioCDocument;
+import bioc.type.UimaBioCPassage;
+import edu.isi.bmkeg.uimaBioC.UimaBioCUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
@@ -28,22 +20,21 @@ import org.uimafit.descriptor.ConfigurationParameter;
 import org.uimafit.factory.ConfigurationParameterFactory;
 import org.uimafit.util.JCasUtil;
 
-import bioc.type.UimaBioCAnnotation;
-import bioc.type.UimaBioCDocument;
-import bioc.type.UimaBioCPassage;
-import edu.isi.bmkeg.uimaBioC.UimaBioCUtils;
+import java.io.*;
+import java.util.*;
+import java.util.regex.Pattern;
 
-public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
+public class InsertFigureSpanIntoBioC extends JCasAnnotator_ImplBase {
 
 	public final static String PARAM_INPUT_DIRECTORY = ConfigurationParameterFactory
-			.createConfigurationParameterName(InsertTsvBackIntoBioC.class, "inDirPath");
+			.createConfigurationParameterName(InsertFigureSpanIntoBioC.class, "inDirPath");
 	@ConfigurationParameter(mandatory = true, description = "Directory for the SciDP Data.")
 	String inDirPath;
 	File inDir;
 	
 	Pattern alignmentPattern = Pattern.compile("^(.{0,3}_+)");
 
-	private static Logger logger = Logger.getLogger(InsertTsvBackIntoBioC.class);
+	private static Logger logger = Logger.getLogger(InsertFigureSpanIntoBioC.class);
 
 	private StringMetric levenshteinSimilarityMetric;
 	
@@ -147,7 +138,7 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 
 		}
 		
-		int discourseTypeColumn = -1, textColumn = -1, figAssignment = -1;
+		int discourseTypeColumn = -1, textColumn = -1, figAssignment = -1, offsetBeginCol = -1, offsetEndCol = -1;
 		for(int i=0; i<table.get(0).size(); i++) {
 			String colHeading = table.get(0).get(i);
 			if(colHeading.equals("Discourse Type") ) 
@@ -156,6 +147,10 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 				textColumn = i;
 			else if(colHeading.equals("fig_spans"))
 				figAssignment = i;
+			else if(colHeading.equals("Offset_Begin"))
+				offsetBeginCol = i;
+			else if(colHeading.equals("Offset_End"))
+				offsetEndCol = i;
 		}
 		
 		if( discourseTypeColumn == -1 )
@@ -163,8 +158,7 @@ public class InsertTsvBackIntoBioC extends JCasAnnotator_ImplBase {
 		
 		int counter = 1;
 		
-		List<Sentence> sentences = UimaBioCUtils.readAllReadableSentences(jCas);
-		//List<Sentence> sentences = JCasUtil.selectCovered(jCas, Sentence.class, start, end);
+		List<Sentence> sentences = JCasUtil.selectCovered(jCas, Sentence.class, start, end);
 		String oldPCode = "";
 		SENTENCE_LOOP: for (Sentence s : sentences) {
 

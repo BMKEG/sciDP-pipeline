@@ -6,12 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -30,17 +26,17 @@ import bioc.type.UimaBioCDocument;
 import bioc.type.UimaBioCPassage;
 import edu.isi.bmkeg.uimaBioC.UimaBioCUtils;
 
-public class InsertSciDpBackIntoBioC extends JCasAnnotator_ImplBase {
+public class InsertSciDTBackIntoBioC extends JCasAnnotator_ImplBase {
 
 	public final static String PARAM_INPUT_DIRECTORY = ConfigurationParameterFactory
-			.createConfigurationParameterName(InsertSciDpBackIntoBioC.class, "inDirPath");
+			.createConfigurationParameterName(InsertSciDTBackIntoBioC.class, "inDirPath");
 	@ConfigurationParameter(mandatory = true, description = "Directory for the SciDP Data.")
 	String inDirPath;
 	File inDir;
 
 	Pattern alignmentPattern = Pattern.compile("^(.{0,3}_+)");
 
-	private static Logger logger = Logger.getLogger(InsertSciDpBackIntoBioC.class);
+	private static Logger logger = Logger.getLogger(InsertSciDTBackIntoBioC.class);
 
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 
@@ -86,7 +82,12 @@ public class InsertSciDpBackIntoBioC extends JCasAnnotator_ImplBase {
 				logger.warn("SciDP inputs and outputs don't match for " + uiD.getId());
 			}
 
-			this.dumpSectionToFile(jCas, baseLines, outLines, uiD);
+			try {
+				this.dumpSectionToFile(jCas, baseLines, outLines, uiD);
+			} catch( Exception e ) {
+				logger.warn("Loading SciDP Annotations from " + uiD.getId() + " - FAILED");
+				uiD.setId("skip");
+			}
 
 			logger.info("Loading SciDP Annotations from " + uiD.getId() + " - COMPLETED");
 

@@ -1,0 +1,20 @@
+"@context": {
+        
+        "source": {
+          "@id": "https://www.ncbi.nlm.nih.gov/pubmed/",
+          "@type": "@id"
+        }
+        
+        "biopax-evidence": {
+          "@id": "http://www.biopax.org/release/biopax-level3.owl#evidence",
+          "@type": "@id"
+        }
+        
+        "fig-code": "http://ns.example.com/store#Store",
+        
+        "discourse-type": {
+          "@id": "http://purl.org/ske/scidt/discourse_type",
+          "@type": "@id"
+        }
+        
+ }
